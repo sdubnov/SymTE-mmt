@@ -23,7 +23,7 @@ def parse_args(args=None, namespace=None):
     parser.add_argument(
         "-d",
         "--dataset",
-        choices=("sod", "lmd", "lmd_full", "snd"),
+        choices=("sod", "lmd", "lmd_full", "snd", "midi_data_x", "midi_data_y", "midi_data_xy", "midi_data_y_neg"),
         required=True,
         help="dataset key",
     )
@@ -72,10 +72,10 @@ def extract(name, in_dir, out_dir, resolution):
     (out_dir / name).parent.mkdir(exist_ok=True)
 
     # Save the notes as a CSV file
-    representation.save_csv_notes((out_dir / name).with_suffix("csv"), notes)
+    representation.save_csv_notes((out_dir / pathlib.Path(str(name) + ".csv")), notes)
 
     # Save the notes as a NPY file
-    np.save((out_dir / name).with_suffix("npy"), notes)
+    np.save((out_dir / pathlib.Path(str(name) + ".npy")), notes)
 
     return name
 

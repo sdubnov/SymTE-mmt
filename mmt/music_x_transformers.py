@@ -336,6 +336,13 @@ class MusicAutoregressiveWrapper(nn.Module):
         else:
             current_values = None
 
+        type_logits = []
+        beat_logits = []
+        position_logits = []
+        pitch_logits = []
+        duration_logits = []
+        instrument_logits = []
+
         instrument_dim = self.dimensions["instrument"]
         type_dim = self.dimensions["type"]
         for _ in range(seq_len):
@@ -453,6 +460,20 @@ class MusicAutoregressiveWrapper(nn.Module):
                         idx = torch.argmax(is_eos_token.byte())
                         out[i, idx + 1 :] = self.pad_value
                     break
+            
+            type_logits.append(logits[0])
+            beat_logits.append(logits[1])
+            position_logits.append(logits[2])
+            pitch_logits.append(logits[3])
+            duration_logits.append(logits[4])
+            instrument_logits.append(logits[5])
+        print(len(type_logits))
+        type_logits = torch.stack(type_logits, dim=1)
+        beat_logits = torch.stack(beat_logits, dim=1)
+        position_logits = torch.stack(position_logits, dim=1)
+        pitch_logits = torch.stack(pitch_logits, dim=1)
+        duration_logits = torch.stack(duration_logits, dim=1)
+        instrument_logits = torch.stack(instrument_logits, dim=1)
 
         out = out[:, t:]
 
@@ -464,7 +485,8 @@ class MusicAutoregressiveWrapper(nn.Module):
         if return_attn:
             return out, attn
 
-        return out
+        return out, (type_logits, beat_logits, position_logits, 
+                     pitch_logits, duration_logits, instrument_logits)
 
     def forward(self, x, return_list=False, **kwargs):
         xi = x[:, :-1]

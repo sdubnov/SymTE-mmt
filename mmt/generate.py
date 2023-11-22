@@ -24,7 +24,7 @@ def parse_args(args=None, namespace=None):
     parser.add_argument(
         "-d",
         "--dataset",
-        choices=("sod", "lmd", "lmd_full", "snd"),
+        choices=("sod", "lmd", "lmd_full", "snd", "midi_data_x", "midi_data_y", "midi_data_xy", "midi_data_y_neg"),
         required=True,
         help="dataset key",
     )
@@ -132,18 +132,18 @@ def save_result(filename, data, sample_dir, encoding):
     music.write(sample_dir / "mid" / f"{filename}.mid")
 
     # Save as a WAV file
-    music.write(
-        sample_dir / "wav" / f"{filename}.wav",
-        options="-o synth.polyphony=4096",
-    )
+    # music.write(
+    #     sample_dir / "wav" / f"{filename}.wav",
+    #     options="-o synth.polyphony=4096",
+    # )
 
     # Save also as a MP3 file
-    subprocess.check_output(
-        ["ffmpeg", "-loglevel", "error", "-y", "-i"]
-        + [str(sample_dir / "wav" / f"{filename}.wav")]
-        + ["-b:a", "192k"]
-        + [str(sample_dir / "mp3" / f"{filename}.mp3")]
-    )
+    # subprocess.check_output(
+    #     ["ffmpeg", "-loglevel", "error", "-y", "-i"]
+    #     + [str(sample_dir / "wav" / f"{filename}.wav")]
+    #     + ["-b:a", "192k"]
+    #     + [str(sample_dir / "mp3" / f"{filename}.mp3")]
+    # )
 
     # Trim the music
     music.trim(music.resolution * 64)
@@ -154,18 +154,18 @@ def save_result(filename, data, sample_dir, encoding):
     )
 
     # Save as a WAV file
-    music.write(
-        sample_dir / "wav-trimmed" / f"{filename}.wav",
-        options="-o synth.polyphony=4096",
-    )
+    # music.write(
+    #     sample_dir / "wav-trimmed" / f"{filename}.wav",
+    #     options="-o synth.polyphony=4096",
+    # )
 
     # Save also as a MP3 file
-    subprocess.check_output(
-        ["ffmpeg", "-loglevel", "error", "-y", "-i"]
-        + [str(sample_dir / "wav-trimmed" / f"{filename}.wav")]
-        + ["-b:a", "192k"]
-        + [str(sample_dir / "mp3-trimmed" / f"{filename}.mp3")]
-    )
+    # subprocess.check_output(
+    #     ["ffmpeg", "-loglevel", "error", "-y", "-i"]
+    #     + [str(sample_dir / "wav-trimmed" / f"{filename}.wav")]
+    #     + ["-b:a", "192k"]
+    #     + [str(sample_dir / "mp3-trimmed" / f"{filename}.mp3")]
+    # )
 
 
 def main():
@@ -215,6 +215,7 @@ def main():
     sample_dir = args.out_dir / "samples"
     sample_dir.mkdir(exist_ok=True)
     (sample_dir / "npy").mkdir(exist_ok=True)
+    (sample_dir / "logits").mkdir(exist_ok=True)
     (sample_dir / "csv").mkdir(exist_ok=True)
     (sample_dir / "txt").mkdir(exist_ok=True)
     (sample_dir / "json").mkdir(exist_ok=True)
@@ -306,7 +307,7 @@ def main():
             tgt_start[:, 0, 0] = sos
 
             # Generate new samples
-            generated = model.generate(
+            generated, _ = model.generate(
                 tgt_start,
                 args.seq_len,
                 eos_token=eos,
@@ -331,7 +332,7 @@ def main():
             tgt_start = batch["seq"][:1, :prefix_len].to(device)
 
             # Generate new samples
-            generated = model.generate(
+            generated, _ = model.generate(
                 tgt_start,
                 args.seq_len,
                 eos_token=eos,
@@ -359,7 +360,7 @@ def main():
             tgt_start = batch["seq"][:1, :cond_len].to(device)
 
             # Generate new samples
-            generated = model.generate(
+            generated, _ = model.generate(
                 tgt_start,
                 args.seq_len,
                 eos_token=eos,
@@ -387,7 +388,7 @@ def main():
             tgt_start = batch["seq"][:1, :cond_len].to(device)
 
             # Generate new samples
-            generated = model.generate(
+            generated, logit_arrays = model.generate(
                 tgt_start,
                 args.seq_len,
                 eos_token=eos,
@@ -406,6 +407,44 @@ def main():
                 encoding,
             )
 
+            # copy to memory
+            logit_arrays = [logit_array.cpu().numpy() for logit_array in logit_arrays]
+
+            # Save type_logits
+            np.save(
+                sample_dir / "logits" / f"{i}_16-beat-continuation-type_logits.npy",
+                logit_arrays[0],
+            )
+
+            # Save beat_logits
+            np.save(
+                sample_dir / "logits" / f"{i}_16-beat-continuation-beat_logits.npy",
+                logit_arrays[1],
+            )
+
+            # Save position_logits
+            np.save(
+                sample_dir / "logits" / f"{i}_16-beat-continuation-position_logits.npy",
+                logit_arrays[2],
+            )
+
+            # Save pitch_logits
+            np.save(
+                sample_dir / "logits" / f"{i}_16-beat-continuation-pitch_logits.npy",
+                logit_arrays[3],
+            )
+
+            # Save duration_logits
+            np.save(
+                sample_dir / "logits" / f"{i}_16-beat-continuation-duration_logits.npy",
+                logit_arrays[4],
+            )
+
+            # Save instrument_logits
+            np.save(
+                sample_dir / "logits" / f"{i}_16-beat-continuation-instrument_logits.npy",
+                logit_arrays[5],
+            )
 
 if __name__ == "__main__":
     main()
