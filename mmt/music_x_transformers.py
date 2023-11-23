@@ -451,6 +451,15 @@ class MusicAutoregressiveWrapper(nn.Module):
             out = torch.cat((out, stacked), dim=1)
             mask = F.pad(mask, (0, 1), value=True)
 
+            # append logits only if instrument is 1
+            if out[-1, -1, 5].item() == 1:
+                type_logits.append(logits[0])
+                beat_logits.append(logits[1])
+                position_logits.append(logits[2])
+                pitch_logits.append(logits[3])
+                duration_logits.append(logits[4])
+                instrument_logits.append(logits[5])
+
             if exists(eos_token):
                 is_eos_tokens = out[..., 0] == eos_token
 
@@ -459,15 +468,15 @@ class MusicAutoregressiveWrapper(nn.Module):
                     for i, is_eos_token in enumerate(is_eos_tokens):
                         idx = torch.argmax(is_eos_token.byte())
                         out[i, idx + 1 :] = self.pad_value
+                    # append if eos
+                    type_logits.append(logits[0])
+                    beat_logits.append(logits[1])
+                    position_logits.append(logits[2])
+                    pitch_logits.append(logits[3])
+                    duration_logits.append(logits[4])
+                    instrument_logits.append(logits[5])
                     break
             
-            type_logits.append(logits[0])
-            beat_logits.append(logits[1])
-            position_logits.append(logits[2])
-            pitch_logits.append(logits[3])
-            duration_logits.append(logits[4])
-            instrument_logits.append(logits[5])
-        print(len(type_logits))
         type_logits = torch.stack(type_logits, dim=1)
         beat_logits = torch.stack(beat_logits, dim=1)
         position_logits = torch.stack(position_logits, dim=1)

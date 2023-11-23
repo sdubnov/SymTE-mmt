@@ -303,89 +303,116 @@ def main():
             # ------------------------
 
             # Get output start tokens
-            tgt_start = torch.zeros((1, 1, 6), dtype=torch.long, device=device)
-            tgt_start[:, 0, 0] = sos
+            # tgt_start = torch.zeros((1, 1, 6), dtype=torch.long, device=device)
+            # tgt_start[:, 0, 0] = sos
 
             # Generate new samples
-            generated, _ = model.generate(
-                tgt_start,
-                args.seq_len,
-                eos_token=eos,
-                temperature=args.temperature,
-                filter_logits_fn=args.filter,
-                filter_thres=args.filter_threshold,
-                monotonicity_dim=("type", "beat"),
-            )
-            generated_np = torch.cat((tgt_start, generated), 1).cpu().numpy()
+            # generated, _ = model.generate(
+            #     tgt_start,
+            #     args.seq_len,
+            #     eos_token=eos,
+            #     temperature=args.temperature,
+            #     filter_logits_fn=args.filter,
+            #     filter_thres=args.filter_threshold,
+            #     monotonicity_dim=("type", "beat"),
+            # )
+            # generated_np = torch.cat((tgt_start, generated), 1).cpu().numpy()
 
             # Save the results
-            save_result(
-                f"{i}_unconditioned", generated_np[0], sample_dir, encoding
-            )
+            # save_result(
+            #     f"{i}_unconditioned", generated_np[0], sample_dir, encoding
+            # )
 
             # ------------------------------
             # Instrument-informed generation
             # ------------------------------
 
             # Get output start tokens
-            prefix_len = int(np.argmax(batch["seq"][0, :, 1] >= beat_0))
-            tgt_start = batch["seq"][:1, :prefix_len].to(device)
+            # prefix_len = int(np.argmax(batch["seq"][0, :, 1] >= beat_0))
+            # tgt_start = batch["seq"][:1, :prefix_len].to(device)
 
             # Generate new samples
-            generated, _ = model.generate(
-                tgt_start,
-                args.seq_len,
-                eos_token=eos,
-                temperature=args.temperature,
-                filter_logits_fn=args.filter,
-                filter_thres=args.filter_threshold,
-                monotonicity_dim=("type", "beat"),
-            )
-            generated_np = torch.cat((tgt_start, generated), 1).cpu().numpy()
+            # generated, _ = model.generate(
+            #     tgt_start,
+            #     args.seq_len,
+            #     eos_token=eos,
+            #     temperature=args.temperature,
+            #     filter_logits_fn=args.filter,
+            #     filter_thres=args.filter_threshold,
+            #     monotonicity_dim=("type", "beat"),
+            # )
+            # generated_np = torch.cat((tgt_start, generated), 1).cpu().numpy()
 
             # Save the results
-            save_result(
-                f"{i}_instrument-informed",
-                generated_np[0],
-                sample_dir,
-                encoding,
-            )
+            # save_result(
+            #     f"{i}_instrument-informed",
+            #     generated_np[0],
+            #     sample_dir,
+            #     encoding,
+            # )
 
             # -------------------
             # 4-beat continuation
             # -------------------
 
             # Get output start tokens
-            cond_len = int(np.argmax(batch["seq"][0, :, 1] >= beat_4))
-            tgt_start = batch["seq"][:1, :cond_len].to(device)
+            # cond_len = int(np.argmax(batch["seq"][0, :, 1] >= beat_4))
+            # tgt_start = batch["seq"][:1, :cond_len].to(device)
 
             # Generate new samples
-            generated, _ = model.generate(
-                tgt_start,
-                args.seq_len,
-                eos_token=eos,
-                temperature=args.temperature,
-                filter_logits_fn=args.filter,
-                filter_thres=args.filter_threshold,
-                monotonicity_dim=("type", "beat"),
-            )
-            generated_np = torch.cat((tgt_start, generated), 1).cpu().numpy()
+            # generated, _ = model.generate(
+            #     tgt_start,
+            #     args.seq_len,
+            #     eos_token=eos,
+            #     temperature=args.temperature,
+            #     filter_logits_fn=args.filter,
+            #     filter_thres=args.filter_threshold,
+            #     monotonicity_dim=("type", "beat"),
+            # )
+            # generated_np = torch.cat((tgt_start, generated), 1).cpu().numpy()
 
             # Save the results
-            save_result(
-                f"{i}_4-beat-continuation",
-                generated_np[0],
-                sample_dir,
-                encoding,
-            )
+            # save_result(
+            #     f"{i}_4-beat-continuation",
+            #     generated_np[0],
+            #     sample_dir,
+            #     encoding,
+            # )
 
             # --------------------
             # 16-beat continuation
             # --------------------
 
             # Get output start tokens
-            cond_len = int(np.argmax(batch["seq"][0, :, 1] >= beat_16))
-            tgt_start = batch["seq"][:1, :cond_len].to(device)
+            # cond_len = int(np.argmax(batch["seq"][0, :, 1] >= beat_16))
+            # tgt_start = batch["seq"][:1, :cond_len].to(device)
+
+            # Generate new samples
+            # generated, _ = model.generate(
+            #     tgt_start,
+            #     args.seq_len,
+            #     eos_token=eos,
+            #     temperature=args.temperature,
+            #     filter_logits_fn=args.filter,
+            #     filter_thres=args.filter_threshold,
+            #     monotonicity_dim=("type", "beat"),
+            # )
+            # generated_np = torch.cat((tgt_start, generated), 1).cpu().numpy()
+
+            # Save results
+            # save_result(
+            #     f"{i}_16-beat-continuation",
+            #     generated_np[0],
+            #     sample_dir,
+            #     encoding,
+            # )
+
+            # -----------------------
+            # 32 element continuation
+            # -----------------------
+
+            # Get output start tokens
+            tgt_start = batch["seq"][:1, :32].to(device)
 
             # Generate new samples
             generated, logit_arrays = model.generate(
@@ -401,7 +428,7 @@ def main():
 
             # Save results
             save_result(
-                f"{i}_16-beat-continuation",
+                f"{i}_32-element-continuation",
                 generated_np[0],
                 sample_dir,
                 encoding,
@@ -412,37 +439,37 @@ def main():
 
             # Save type_logits
             np.save(
-                sample_dir / "logits" / f"{i}_16-beat-continuation-type_logits.npy",
+                sample_dir / "logits" / f"{i}_32-element-continuation-type_logits.npy",
                 logit_arrays[0],
             )
 
             # Save beat_logits
             np.save(
-                sample_dir / "logits" / f"{i}_16-beat-continuation-beat_logits.npy",
+                sample_dir / "logits" / f"{i}_32-element-continuation-beat_logits.npy",
                 logit_arrays[1],
             )
 
             # Save position_logits
             np.save(
-                sample_dir / "logits" / f"{i}_16-beat-continuation-position_logits.npy",
+                sample_dir / "logits" / f"{i}_32-element-continuation-position_logits.npy",
                 logit_arrays[2],
             )
 
             # Save pitch_logits
             np.save(
-                sample_dir / "logits" / f"{i}_16-beat-continuation-pitch_logits.npy",
+                sample_dir / "logits" / f"{i}_32-element-continuation-pitch_logits.npy",
                 logit_arrays[3],
             )
 
             # Save duration_logits
             np.save(
-                sample_dir / "logits" / f"{i}_16-beat-continuation-duration_logits.npy",
+                sample_dir / "logits" / f"{i}_32-element-continuation-duration_logits.npy",
                 logit_arrays[4],
             )
 
             # Save instrument_logits
             np.save(
-                sample_dir / "logits" / f"{i}_16-beat-continuation-instrument_logits.npy",
+                sample_dir / "logits" / f"{i}_32-element-continuation-instrument_logits.npy",
                 logit_arrays[5],
             )
 
