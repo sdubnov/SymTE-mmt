@@ -24,7 +24,7 @@ def parse_args(args=None, namespace=None):
     parser.add_argument(
         "-d",
         "--dataset",
-        choices=("sod", "lmd", "lmd_full", "snd", "midi_data_x", "midi_data_y", "midi_data_xy", "midi_data_y_neg"),
+        choices=("sod", "lmd", "lmd_full", "snd", "midi_data_x", "midi_data_y", "midi_data_xy", "midi_data_y_neg", "midi_data_xy_neg"),
         required=True,
         help="dataset key",
     )
@@ -423,6 +423,7 @@ def main():
                 filter_logits_fn=args.filter,
                 filter_thres=args.filter_threshold,
                 monotonicity_dim=("type", "beat"),
+                ground_truth = truth_np
             )
             generated_np = torch.cat((tgt_start, generated), 1).cpu().numpy()
 
