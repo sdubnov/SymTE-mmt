@@ -1,9 +1,14 @@
 import os
-from compute_info_flow import check_exit_status
+import sys
 
-def setup_environment():
-    status = os.system("conda env create -f environment.yml")
-    check_exit_status("Error: Couldn't create environment", status)
+def check_exit_status(message, *status):
+    """
+    Check the exit status of a command and print an error message if it failed
+    """
+    for s in status:
+        if s != 0:
+            print(message)
+            sys.exit(1)
 
 def setup_exp_folder():
     # make directories if they don't exist
@@ -29,7 +34,6 @@ def setup_data_folder():
     check_exit_status("Error: Couldn't create data folders", x_status, y_status, xy_status)
 
 if __name__ == "__main__":
-    setup_environment()
     setup_exp_folder()
     setup_data_folder()
 

@@ -2,6 +2,7 @@ name: mtmt
 channels:
   - conda-forge
   - pytorch
+  - nvidia
 dependencies:
   - python=3.9
   - jupyterlab=3.3.4
@@ -13,8 +14,8 @@ dependencies:
   - matplotlib=3.5.1
   - tqdm=4.64.0
   - scikit-learn=1.0.2
-  - cudatoolkit=10.2
-  - pytorch::pytorch=1.11.0
+  - pytorch-cuda=11.7
+  - pytorch::pytorch=1.13.1
   - pylint
   - black
   - flake8
@@ -23,3 +24,4 @@ dependencies:
     - x-transformers==0.25.9
     - muspy
     - plotly
+    - gdown
