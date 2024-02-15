@@ -23,9 +23,7 @@ def parse_args(args=None, namespace=None):
     parser.add_argument(
         "-d",
         "--dataset",
-        choices=("sod", "lmd", "lmd_full", "snd", "midi_data_x", "midi_data_y", 
-                 "midi_data_xy", "midi_data_y_neg", "midi_data_xy_neg",
-                 "midi_Y", "midi_YX"),
+        choices=("sod", "lmd", "lmd_full", "snd", "X", "Y", "XY"),
         required=True,
         help="dataset key",
     )

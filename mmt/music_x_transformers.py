@@ -347,7 +347,8 @@ class MusicAutoregressiveWrapper(nn.Module):
         instrument_dim = self.dimensions["instrument"]
         type_dim = self.dimensions["type"]
 
-        truth_tensor = torch.tensor(ground_truth, dtype=out.dtype, device=out.device).unsqueeze(0)
+        if ground_truth is not None:
+            truth_tensor = torch.tensor(ground_truth, dtype=out.dtype, device=out.device).unsqueeze(0)
         
         for _ in range(seq_len):
             if ground_truth is not None:
@@ -470,13 +471,13 @@ class MusicAutoregressiveWrapper(nn.Module):
             mask = F.pad(mask, (0, 1), value=True)
 
             # append logits only if instrument is 1
-            if out[-1, -1, 5].item() == 1:
-                type_logits.append(copied_logits[0])
-                beat_logits.append(copied_logits[1])
-                position_logits.append(copied_logits[2])
-                pitch_logits.append(copied_logits[3])
-                duration_logits.append(copied_logits[4])
-                instrument_logits.append(copied_logits[5])
+            # if out[-1, -1, 5].item() == 1:
+            type_logits.append(copied_logits[0])
+            beat_logits.append(copied_logits[1])
+            position_logits.append(copied_logits[2])
+            pitch_logits.append(copied_logits[3])
+            duration_logits.append(copied_logits[4])
+            instrument_logits.append(copied_logits[5])
 
             if exists(eos_token):
                 is_eos_tokens = out[..., 0] == eos_token

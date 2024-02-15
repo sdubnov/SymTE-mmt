@@ -21,3 +21,5 @@ dependencies:
   - pip:
     - git+https://github.com/salu133445/muspy@main#egg=muspy
     - x-transformers==0.25.9
+    - muspy
+    - plotly
