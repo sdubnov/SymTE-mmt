@@ -1,6 +1,68 @@
-# Multitrack Music Transformer
+# Evaluating Co-Creativity using Total Information Flow
 
-This repository contains the official implementation of "Multitrack Music Transformer" (ICASSP 2023).
+## Content
+
+- [Setup](#setup)
+- [Experiments](#experiments)
+- [Utility Scripts](#utility-scripts)
+- [Acknowledgement](#acknowledgement)
+
+## Setup
+
+Create the environment.
+
+```sh
+conda env create -f environment.yml
+```
+
+Activate the environment.
+
+```sh
+conda activate mtmt
+```
+
+Run setup script.
+
+```sh
+python scripts/setup.py
+```
+
+## Experiments
+
+### Generate results
+
+* Make sure to place the X, Y and XY MIDI files in `data/X/X/`, `data/Y/Y/` and `data/XY/XY/` respectively. The X, Y, XY files for a sample should have the same filename. 
+
+* Run `scripts/compute_info_flow.py`
+
+```sh
+python compute_info_flow.py OUTPUT_FILE_PATH
+```
+
+OUTPUT_FILE_PATH is the file path where the results will be stored as a `.pkl` file. The path should include the name of the file. You can save them in `results/`. 
+
+Example:
+```sh
+python compute_info_flow.py results/example.pkl
+```
+
+### Visualize experiment results
+
+* Open `notebooks/visualize.ipynb` to visualize results. The notebook has code to visualize the experiments used in the paper. The `results/` directory has sample results for these experiments, so you don't have to run the `compute_info_flow.py` script with data. 
+
+## Utility Scripts
+
+Three utility scripts have been provided in the `scripts/` directory:
+
+1. `change_instrument.py`: Script to change instrument of a track in a midi file.
+2. `combine_midi.py`: Script to combine 2 midi tracks into a single midi file.
+3. `split_midi.py`: Script to split a midi file into 2 separate midi files, each containing a single track.
+
+Usage instructions for these scripts are documented inside the files.
+
+## Acknowledgment
+
+This repository uses the official implementation of "Multitrack Music Transformer" (ICASSP 2023).
 
 __Multitrack Music Transformer__<br>
 Hao-Wen Dong, Ke Chen, Shlomo Dubnov, Julian McAuley and Taylor Berg-Kirkpatrick<br>
@@ -10,150 +72,3 @@ _Proceedings of the IEEE International Conference on Acoustics, Speech and Signa
 [[code](https://github.com/salu133445/mmt)]
 [[reviews](https://salu133445.github.io/pdf/mmt-icassp2023-reviews.pdf)]
 
-## Content
-
-- [Prerequisites](#prerequisites)
-- [Preprocessing](#preprocessing)
-- [Preprocessed Datasets](#preprocessed-datasets)
-- [Training](#training)
-- [Pretrained Models](#pretrained-models)
-- [Evaluation](#evaluation)
-- [Generation (Inference)](#generation-inference)
-- [Citation](#citation)
-
-## Prerequisites
-
-We recommend using Conda. You can create the environment with the following command.
-
-```sh
-conda env create -f environment.yml
-```
-
-## Preprocessing
-
-### Download the datasets
-
-Please download the [Symbolic orchestral database (SOD)](https://qsdfo.github.io/LOP/database.html). You may download it via command line as follows.
-
-```sh
-wget https://qsdfo.github.io/LOP/database/SOD.zip
-```
-
-We also support the following two datasets:
-
-- [Lakh MIDI Dataset (LMD)](https://qsdfo.github.io/LOP/database.html):
-
-  ```sh
-  wget http://hog.ee.columbia.edu/craffel/lmd/lmd_full.tar.gz
-  ```
-
-- [SymphonyNet Dataset](https://symphonynet.github.io/):
-
-  ```sh
-  gdown https://drive.google.com/u/0/uc?id=1j9Pvtzaq8k_QIPs8e2ikvCR-BusPluTb&export=download
-  ```
-
-### Prepare the name list
-
-Get a list of filenames for each dataset.
-
-```sh
-find data/sod/SOD -type f -name *.mid -o -name *.xml | cut -c 14- > data/sod/original-names.txt
-```
-
-> Note: Change the number in the cut command for different datasets.
-
-### Convert the data
-
-Convert the MIDI and MusicXML files into MusPy files for processing.
-
-```sh
-python convert_sod.py
-```
-
-> Note: You may enable multiprocessing with the `-j` option, for example, `python convert_sod.py -j 10` for 10 parallel jobs.
-
-### Extract the note list
-
-Extract a list of notes from the MusPy JSON files.
-
-```sh
-python extract.py -d sod
-```
-
-### Split training/validation/test sets
-
-Split the processed data into training, validation and test sets.
-
-```sh
-python split.py -d sod
-```
-
-## Preprocessed Datasets
-
-The preprocessed datasets can be found [here](https://drive.google.com/drive/folders/1owWu-Ne8wDoBYCFiF9z11fruJo62m_uK?usp=share_link). You can use [gdown](https://github.com/wkentaro/gdown) to download them via command line as follows.
-
-```sh
-gdown --id 1owWu-Ne8wDoBYCFiF9z11fruJo62m_uK --folder
-```
-
-Extract the files to `data/{DATASET_KEY}/processed/json` and `data/{DATASET_KEY}/processed/notes`, where `DATASET_KEY` is `sod`, `lmd`, `lmd_full` or `snd`.
-
-## Training
-
-Train a Multitrack Music Transformer model.
-
-- Absolute positional embedding (APE):
-
-  `python mmt/train.py -d sod -o exp/sod/ape -g 0`
-
-- Relative positional embedding (RPE):
-
-  `python mmt/train.py -d sod -o exp/sod/rpe --no-abs_pos_emb --rel_pos_emb -g 0`
-
-- No positional embedding (NPE):
-
-  `python mmt/train.py -d sod -o exp/sod/npe --no-abs_pos_emb --no-rel_pos_emb -g 0`
-
-## Pretrained Models
-
-The pretrained models can be found [here](https://drive.google.com/drive/folders/1HoKfghXOmiqi028oc_Wv0m2IlLdcJglQ?usp=share_link). You can use [gdown] to download them via command line as follows.
-
-```sh
-gdown --id 1HoKfghXOmiqi028oc_Wv0m2IlLdcJglQ --folder
-```
-
-## Evaluation
-
-Evaluate the trained model.
-
-```sh
-python mmt/evaluate.py -d sod -o exp/sod/ape -ns 100 -g 0
-```
-
-## Generation (Inference)
-
-Generate new samples using a trained model.
-
-```sh
-python mmt/generate.py -d sod -o exp/sod/ape -g 0
-```
-
-## Acknowledgment
-
-The code is based largely on the [x-transformers](https://github.com/lucidrains/x-transformers) library developed by [lucidrains](https://github.com/lucidrains).
-
-## Citation
-
-Please cite the following paper if you use the code provided in this repository.
-
- > Hao-Wen Dong, Ke Chen, Shlomo Dubnov, Julian McAuley and Taylor Berg-Kirkpatrick, "Multitrack Music Transformer," _Proceedings of the IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)_, 2023.
-
-```bibtex
-@inproceedings{dong2023mmt,
-    author = {Hao-Wen Dong and Ke Chen and Shlomo Dubnov and Julian McAuley and Taylor Berg-Kirkpatrick},
-    title = {Multitrack Music Transformer},
-    booktitle = {Proceedings of the IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
-    year = 2023,
-}
-```
