@@ -1,7 +1,6 @@
 # Evaluating Co-Creativity using Total Information Flow
 
-Link to the [paper][paper_link]
-[paper_link]:https://arxiv.org/pdf/2402.06810
+Link to the paper https://arxiv.org/pdf/2402.06810
 
 ## Content
 
